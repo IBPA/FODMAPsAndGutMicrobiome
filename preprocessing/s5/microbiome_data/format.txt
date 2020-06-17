@@ -1,0 +1,11 @@
+pre_diet.csv (for pre-diet microbiome) and post_diet.csv (for post-diet microbiome):
+First column corresponds to the host id (from metadata.csv).
+Each of the remaining columns correspond to a probe id.
+First row contains the column names.
+Each of the remaining rows charactereize microbiome profile of a given host.
+
+probe_names.csv (for probe names):
+First column corresponds to probe ids (used as column names in pre/post_diet.csv)
+Second column corresponds to probe names.
+First row contains column names.
+Each of the remaining rows associate a probe name with a probe id.
