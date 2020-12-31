@@ -1,6 +1,8 @@
 # Dietary FODMAPs, Gut Microbiome and Health in Irritable Bowel Syndrome
 Investigating the interplay between dietary FODMAPs, gut microbiome and health in irritable bowel syndrome (IBS) using data from multiple studies.
 
+![fig](/fig/Fig1.png)
+
 ## Reproducability
 * **Step 0:** Run ```install_packages.R``` to install required packages.
 * **Step 1:** Place the microbiome data for each study under the corresponding directory under (```preprocessing/study_id/microbiome_data/```). For some studies (s1, s3, s4), the raw microbiome data can be fetched using a corresponding ```fetch_data.sh``` script while for other studies (s2, s5, s6) they were directly requested from the article authors. See table below for the list of studies analyzed. See ```preprocessing/study_id/microbiome_data/format.txt``` for the expected format.
