@@ -3,3 +3,13 @@
 .RData
 .Ruserdata
 .DS_Store
+FODMAPsAndGutMicrobiome.Rproj
+manuscript
+preprocessing/shared/*
+!preprocessing/shared/fetch.sh
+preprocessing/*/microbiome_data/*
+!preprocessing/*/microbiome_data/fetch.sh
+!preprocessing/*/microbiome_data/format.txt
+preprocessing/*/raw_data
+integrated_analysis/integrated_*/
+results

@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 # Convert microbiome data and metadata into our unified format
 
 fix_col_names <- function(df){
@@ -19,26 +20,29 @@ df <- readxl::read_excel(src_filepath)
 # 2) Fix column names
 df <- fix_col_names(df)
 
-# 3) Filter low-FODMAP rows
-df <- df[!is.na(df$DIET) & df$DIET == "low-FODMAP diet",]
-
-# 4) Fix column types
+# 3) Fix column types
 microbiome_cols <- colnames(df)[11:ncol(df)]
 df[microbiome_cols] <- sapply(df[microbiome_cols], as.numeric)
 
-# 5) Save pre-diet microbiome
+# 4) Normalize microbiome columns (zero-mean and unit-sd)
+df[microbiome_cols] <- scale(df[microbiome_cols])
+
+# 5) Filter low-FODMAP rows
+df <- df[!is.na(df$DIET) & df$DIET == "low-FODMAP diet",]
+
+# 6) Save pre-diet microbiome
 df_pre_microbiome <- df[df$Intervention == "Before intervention",
                         c("ID", microbiome_cols)]
 write.table(df_pre_microbiome, file.path(MICROBIOME_DATA_DIR, "pre_diet.csv"), 
             sep = ",", row.names = FALSE)
 
-# 6) Save post-diet microbiome
+# 7) Save post-diet microbiome
 df_post_microbiome <- df[df$Intervention == "After intervention",
                         c("ID", microbiome_cols)]
 write.table(df_post_microbiome, file.path(MICROBIOME_DATA_DIR, "post_diet.csv"),
             sep = ",", row.names = FALSE)
 
-# 7) Save metadata
+# 8) Save metadata
 # host_id,pre_diet_microbiome_sample_id,pre_diet_IBS_SSS,post_diet_microbiome_sample_id,post_diet_IBS_SSS
 df_meta <- df[df$Intervention == "Before intervention",
               c("ID", "ID", "IBS-SSS_Day_0", "ID", "IBS-SSS_Day_29")]

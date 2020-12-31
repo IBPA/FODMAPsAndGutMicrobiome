@@ -1,10 +1,12 @@
+#!/usr/bin/env Rscript
+#' Install the necessary R packages
+
 install.packages("BiocManager")
 BiocManager::install("dada2", version = "3.11")
 BiocManager::install("DECIPHER")
 BiocManager::install("phyloseq")
 BiocManager::install("microbiome")
 BiocManager::install("devtools")
-
 
 install.packages("ggplot2")
 install.packages("ape")
@@ -26,3 +28,5 @@ install.packages("testit")
 install.packages("ini")
 install.packages("showtext")
 install.packages("svglite")
+install.packages("phangorn")
+install.packages("xlsx")

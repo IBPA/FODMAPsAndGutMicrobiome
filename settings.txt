@@ -1,0 +1,7 @@
+SRA_SOFTWARE_URL="https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/current/sratoolkit.current-ubuntu64.tar.gz"
+SRA_TOOLKIT_DIR=$HOME/software/sratoolkit/
+SRA_PREFETCH_SCRIPT=$SRA_TOOLKIT_DIR/bin/prefetch
+SRA_FASTQ_DUMP_SCRIPT=$SRA_TOOLKIT_DIR/bin/fastq-dump
+QIIME_ENV="qiime2-2020.8"
+CONDA_ENV=$HOME/miniconda3/etc/profile.d/conda.sh
+PICRUSt_ENV="picrust1"

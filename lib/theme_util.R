@@ -11,10 +11,10 @@ get_base_theme <- function(font_ratio){
           axis.line = element_line(colour = "black"),
           panel.border = element_rect(fill=NA, size=1),
           legend.key.size = unit(0.5, "cm"),
+          text = element_text(family="Helvetica", size=7*font_ratio),
           axis.text = element_text(size=8*font_ratio),
           axis.title = element_text(size=8*font_ratio, face='bold'),
-          strip.text = element_text(size=8*font_ratio, vjust = 0),
-          text = element_text(family="Helvetica", size=7*font_ratio)
+          strip.text = element_text(size=8*font_ratio, vjust = 0)
     )
   )
 }
