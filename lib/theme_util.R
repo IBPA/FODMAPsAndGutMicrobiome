@@ -1,5 +1,6 @@
 #' Theme related utilities relating to plot colors, fonts, etc.
 
+# Create the theme for ggplot figures
 get_base_theme <- function(font_ratio){
   return(
     theme(panel.grid.major = element_blank(), 

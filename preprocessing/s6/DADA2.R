@@ -151,7 +151,7 @@ detach("package:phangorn", unload=TRUE)
 
 # **********  phyloseq **********
 library(Biostrings); packageVersion("Biostrings")
-#Load sample names from seqtab.nochim as metadata:
+# Load sample names from seqtab.nochim as metadata:
 samdf <- data.frame("name" = rownames(seqtab.nochim))
 rownames(samdf) <- samdf$name
 # Create and save phyloseq object

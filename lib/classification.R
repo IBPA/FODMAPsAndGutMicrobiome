@@ -1,9 +1,6 @@
 #' Utility functions for classification
-RF_NTREE <- 1500
-RF_MaxNodes <- 5
-RND_SEED <- 0
-DIM_REDUCTION_RATIO <- 0.3 # This should be 0.3 per manuscript
 
+# Perform sparce PCA and return the top features
 get_top_otus_spc1 <- function(df_otu, num_dim, scale. = FALSE){
   num_EigWs <- num_dim
   
@@ -11,6 +8,7 @@ get_top_otus_spc1 <- function(df_otu, num_dim, scale. = FALSE){
   pca_res <- nsprcomp(df_otu, k=num_EigWs, ncomp=7, center = TRUE, scale. = )
   dim_ranks <- pca_res$rotation[,"PC1"]
   
+  # Identify the top features to return
   df_eigWs <- data.frame(dim_ranks)
   colnames(df_eigWs) <- c("value")
   df_eigWs$abs <- abs(df_eigWs$value)
@@ -21,6 +19,8 @@ get_top_otus_spc1 <- function(df_otu, num_dim, scale. = FALSE){
   return(eigWs_top)
 }
 
+# Create a binary 'Label' column based on the specified 'label_col' and 
+# the associated label grouping 'label_group'.
 s_get_binary_df <- function(df_comb, label_col, label_group){
   idx_true <- which(df_comb[,label_col] %in% label_group$true)
   df_sub_true <- df_comb[idx_true,]
@@ -36,12 +36,14 @@ s_get_binary_df <- function(df_comb, label_col, label_group){
   return(df_group)
 }
 
+# Calculate the area under the ROC curve given LOO-CV results 
 get_auc_roc <- function(df_loo_cv){
   roc_obj <- pROC::roc(as.numeric(df_loo_cv$Label), 
                        df_loo_cv$Score, direction="<", levels=c(0,1))
   return(roc_obj$auc[1])
 }
 
+# Calculate the area under the PR curve given LOO-CV results
 get_auc_pr <- function(df_loo_cv){
   pr_obj <- pr.curve(df_loo_cv[df_loo_cv$Label == TRUE, c("Score")],
                      df_loo_cv[df_loo_cv$Label == FALSE, c("Score")],
@@ -50,6 +52,7 @@ get_auc_pr <- function(df_loo_cv){
   return(pr_obj$auc.integral)
 }
 
+# Calculate the F1-score given LOO-CV results
 get_F1_score <- function(df_loo_cv, positive = TRUE){
   score_threshold <- dplyr::nth(df_loo_cv$Score, sum(df_loo_cv$Label == FALSE), order_by = df_loo_cv$Score)
   f1_score <- MLmetrics::F1_Score(df_loo_cv$Label, df_loo_cv$Score > score_threshold, positive = positive)
@@ -57,12 +60,13 @@ get_F1_score <- function(df_loo_cv, positive = TRUE){
   return(f1_score)
 }
 
+# Classify using Random-Forest with LOO-CV
 get_loo_CR_scores_RF <- function(x, labels){
   set.seed(RND_SEED) # to ensure reproducability
-  
   df_res <- data.frame(Score=numeric(), Label=logical())
   df_weights <- data.frame()
   
+  # LOO-CR
   for (i in c(1:nrow(x))) {
     # Create train and test
     train.x <- x[-i,,drop=FALSE]
@@ -88,14 +92,10 @@ get_loo_CR_scores_RF <- function(x, labels){
   }
   df_res$Label <- as.logical(df_res$Label)
   
-  # Calculate performance (AUC)
-  
-  
   # Weights
   df_weights_aggr <- data.frame(colMeans(df_weights))
   df_weights_aggr$name <- rownames(df_weights_aggr)
   colnames(df_weights_aggr) <- c("weight", "name")
-  
   
   return( list(scores=df_res, 
                model_weights = df_weights_aggr, 
@@ -104,6 +104,7 @@ get_loo_CR_scores_RF <- function(x, labels){
                f1_score = get_F1_score(df_res)))
 }
 
+# Perform recurvise feature elimination using Random-Forests
 select_otus_RF <- function(x, labels){
   all_res <- list()
   best_auc <- -1
@@ -112,7 +113,9 @@ select_otus_RF <- function(x, labels){
   x_current <- x
   df_featues = data.frame(matrix(nrow=0, ncol = ncol(x), dimnames = list(NULL, colnames(x))))
   
+  # Loop for each remaining feature
   for(i in c(1:ncol(x))){
+    # Classify
     loo_CR_res <- get_loo_CR_scores_RF(x_current, labels)
     all_res[[i]] <- loo_CR_res
     
@@ -159,6 +162,7 @@ select_otus_RF <- function(x, labels){
               df_featues = df_featues))
 }
 
+# Perform recursive feeature elimination using binary Random-Forsests with LOO-CV
 s_classify_binary_RF_loo_iterative_feature_removal <- function(df_comb, x_cols, label_col, label_group){
   # Get the groups
   df_group <- s_get_binary_df(df_comb, label_col, label_group)
@@ -171,6 +175,7 @@ s_classify_binary_RF_loo_iterative_feature_removal <- function(df_comb, x_cols, 
   return(rf_res)
 }
 
+# Binary classification with random forests in LOO-CV setting
 s_classify_binary_RF_loo_cr <- function(df_comb, x_cols, label_col, label_group){
   set.seed(RND_SEED) # to ensure reproducability
   
@@ -208,7 +213,7 @@ s_classify_binary_RF_loo_cr <- function(df_comb, x_cols, label_col, label_group)
   return(df_res)
 }
 
-
+# Plot Precision-Recall curve given binary classifiation results
 get_pr_plot <- function(df_res, color_code, add_label = TRUE, positive = TRUE, add_star = TRUE){
   if(!positive){
     df_res$Score <- - df_res$Score
@@ -255,6 +260,7 @@ get_pr_plot <- function(df_res, color_code, add_label = TRUE, positive = TRUE, a
   return(gPlot)
 }
 
+# Plot Receiver Operating characteristic curve given binary classifiation results
 get_roc_plot <- function(df_res, color_code, add_label = TRUE, positive = TRUE, add_star = TRUE){
   if(!positive){
     df_res$Score <- - df_res$Score
@@ -305,7 +311,13 @@ get_roc_plot <- function(df_res, color_code, add_label = TRUE, positive = TRUE, 
   return(gPlot)
 }
 
-
+# Perform binary classification
+#   'df_comb': data (dataframe)
+#   'microbiome_cols': classification input
+#   'binary_label_groups': binary grouping of labels
+#   'friendly_names': friendly names used for microbiome_cols when plotting
+#   'entity_label': label that identifies the data type (taxa, pathwas, or ga-map probes) 
+#   'label_col': classification output column
 plot_classification_perf <- function(df_comb, microbiome_cols, binary_label_groups, friendly_names, entity_label, label_col = "Response")
 {
   # 1.B) Select Features (unsupervised)

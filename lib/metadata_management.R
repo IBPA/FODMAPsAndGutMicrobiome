@@ -1,5 +1,4 @@
 #' Utility functions for metadata management
-#' Currently works only for 16S rRNA (adding GA-map now)
 
 combine_dataframes <- function(df_main, df_new){
   if(is.null(df_main) || nrow(df_main) == 0) 

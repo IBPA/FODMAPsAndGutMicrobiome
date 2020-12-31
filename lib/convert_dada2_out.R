@@ -145,5 +145,5 @@ if(!is.null(opt$taxa_in)){
   if(opt$verbose){
     cat("No taxonomy file specified so not making taxonomy observation file.\n")
   }
-   
+  
 }

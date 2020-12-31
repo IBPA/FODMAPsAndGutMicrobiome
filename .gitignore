@@ -6,6 +6,7 @@
 FODMAPsAndGutMicrobiome.Rproj
 manuscript
 preprocessing/shared/*
+preprocessing/*/metadata.csv
 !preprocessing/shared/fetch.sh
 preprocessing/*/microbiome_data/*
 !preprocessing/*/microbiome_data/fetch.sh

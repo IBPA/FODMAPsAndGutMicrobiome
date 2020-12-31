@@ -1,6 +1,8 @@
 #' Utility functions for management of microbiome pathway abundances
 
-multi_study_filter <- function(ps, num_min_shared = 1){
+# Filter out OTUs that are not shared in multiple studies integrated in
+# a phyloseq object 'ps'
+multi_study_filter <- function(ps){
   df_metadata <- meta(ps)
   if( !"study_name" %in% colnames(df_metadata) || 
       length(unique(df_metadata$study_name)) <= 1 ){
@@ -12,7 +14,7 @@ multi_study_filter <- function(ps, num_min_shared = 1){
   for(study_name_curr in unique(df_metadata$study_name)){
     sample_names_curr <- df_metadata[df_metadata$study_name == study_name_curr, c("name")]
     ps_curr <- prune_samples(df_metadata$study_name == study_name_curr, ps)
-    otu_keep <- filter_taxa(ps_curr, function(x) sum(x) >= num_min_shared, FALSE)
+    otu_keep <- filter_taxa(ps_curr, function(x) sum(x) >= 1, FALSE) # Filter out taxa with zero sum
     otu_curr <- names(otu_keep[otu_keep == TRUE])
     otu_intersect <- intersect(otu_intersect, otu_curr)
   }
@@ -20,6 +22,8 @@ multi_study_filter <- function(ps, num_min_shared = 1){
   return(prune_taxa(otu_intersect, ps))
 }
 
+# Apply centered log-ratio transform on a phyloseq object.
+# The zero-replacing method used relies on the minimum value of each feature.
 apply_clr <- function(ps.prop){
   otu_t <- otu_table(ps.prop)
   df_otu <- otu_t@.Data
@@ -36,7 +40,6 @@ apply_clr <- function(ps.prop){
   tmp_min <- min(df_otu_clr)
   flat_otu <- as.vector(df_otu_clr)
   c_delta <- sd(flat_otu[flat_otu != 0])/10
-  #c_delta <- 0.25
   df_otu_clr_t <- ifelse(df_otu_clr==0, tmp_min - c_delta, df_otu_clr)
   
   if (ps.prop@otu_table@taxa_are_rows) {
@@ -51,19 +54,20 @@ apply_clr <- function(ps.prop){
   return(ps.new)
 }
 
-
+# Replace "-" with "." in column names
 fix_names <- function(x){
   colnames(x) <- str_replace(colnames(x), "-", ".")
   return(x)
 }
 
+# Return friendly taxa names on a given phyloseq object
 get_friendly_names <- function(ps, unfriendly_names){
   friendly_names <- taxa_names(ps)
   names(friendly_names) <- unfriendly_names
   return(friendly_names)
 }
 
-
+# Return vector with names equal to values
 get_same <- function(input){
   res <- input
   names(res) <- input
@@ -71,6 +75,7 @@ get_same <- function(input){
   return(res)
 }
 
+# Integrate microbiome data from individual DADA2 analysis results stored in 'src_dirs'
 integrate_data_taxa <- function(src_dirs){
   ps_studies <- list()
   for(src_dir in src_dirs){
@@ -92,7 +97,7 @@ integrate_data_taxa <- function(src_dirs){
   
   return(ps)
 }
-
+# Load the probe valus associated with the 'df_metadata' from GA-map data in 'src_dir'
 load_GA_map_abundances <- function(src_dir, df_metadata){
   # Load microbiome data
   df <- read.table(file.path(src_dir, "pre_diet.csv"), header = TRUE, sep = ",")
@@ -106,6 +111,8 @@ load_GA_map_abundances <- function(src_dir, df_metadata){
   return(list(df_otu = df[, c(3:ncol(df))], friendly_names = friendly_names))
 }
 
+# Load the taxa abundances associated with the 'df_metadata from DADA2
+# results in the 'src_dir' 
 load_taxa_abundances <- function(src_dir, df_metadata, rank = "genus"){
   # Load
   src_filepath <- file.path(src_dir, "DADA2.rds")
@@ -131,6 +138,8 @@ load_taxa_abundances <- function(src_dir, df_metadata, rank = "genus"){
   return(list(df_otu = df_otu, friendly_names = friendly_names, ps = ps))
 }
 
+# Load the pathway abundances associated with the 'df_metadata from PICRUSt
+# results in the 'src_dir' 
 load_pathway_abundances <- function(src_dir, df_metadata){
   src_filepath <- file.path(src_dir, "PICRUSt_predicted_metagenomes_KEGG_L3.biom")
   predGenome <- read_biom(src_filepath)
@@ -161,6 +170,7 @@ load_pathway_abundances <- function(src_dir, df_metadata){
   return(list(df_otu = df_otu, friendly_names = friendly_names, ps = ps.prop))
 }
 
+# Select rows where the value of the Response column is in the 'selected_labels'
 get_selected_labels <- function(df_otu, df_meta, selected_labels = c("High", "No")){
   selected_rows <- rownames(df_meta[df_meta$Response %in% selected_labels,])
   
@@ -168,6 +178,7 @@ get_selected_labels <- function(df_otu, df_meta, selected_labels = c("High", "No
               labels = df_meta[selected_rows, c("Response")]))
 }
 
+# Return features of 'df_otu' with differential abundances given binary 'labels'
 get_diff_abundances <- function(df_otu, labels)
 {
   otu_names <- colnames(df_otu)
@@ -187,6 +198,7 @@ get_diff_abundances <- function(df_otu, labels)
   return(df_res_diff_abundances)
 }
 
+# Plot differential abundances
 plot_diff_abundances <- function(df_otu, labels, diff_abundance_info, friendly_names, top_n = 5, feature_group_name = "KEGG Pathways"){
   data.table::setorderv(diff_abundance_info, cols = c("q.value", "p.value", "name"), order = 1)
   top_otus <- diff_abundance_info[1:top_n, c("name")]

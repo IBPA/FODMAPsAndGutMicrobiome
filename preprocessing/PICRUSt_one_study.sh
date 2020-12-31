@@ -1,5 +1,9 @@
 #!/bin/bash
-
+# Run PICRUSt on a given study
+# Arg1: -p PERC_IDENTITY # The percent identity at which vsearch clustering 
+#       should be performed (Default: 97)
+# Arg2: DATA_DIR # Directory that contains results of DADA2 analysis for a given study
+ 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 . ${SCRIPT_DIR}/../settings.txt
 

@@ -1,5 +1,6 @@
 # Generic utility functions
 
+# Log a message
 lib.util.log <- function(message, obj = NULL){
   print(sprintf("** LOG ** %s", message))
   if (!is.null(obj)){
@@ -7,6 +8,7 @@ lib.util.log <- function(message, obj = NULL){
   }
 }
 
+# Save a ggplot object
 lib.util.ggsave <- function(filename, ...){
   lib.util.log(sprintf("Saved to into %s", filename))
   ggsave(filename, ...)
